@@ -53,7 +53,10 @@ function AppSidebar() {
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <a href={item.url} className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md">
+                    <a
+                      href={item.url}
+                      className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md"
+                    >
                       <item.icon size={18} />
                       <span>{item.title}</span>
                     </a>
