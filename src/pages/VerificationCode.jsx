@@ -1,4 +1,5 @@
 import React, { useRef } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.png";
 
@@ -63,7 +64,7 @@ export default function OTPVerification() {
         </Button>
 
         <p className="text-center text-white/80 mt-5">
-          Didn’t receive the code?{" "}
+          Didn't receive the code?{" "}
           <a href="#" className="text-white hover:underline">
             Resend
           </a>
@@ -71,9 +72,9 @@ export default function OTPVerification() {
 
         <p className="text-center text-white/80 mt-2">
           Change email?{" "}
-          <a href="#" className="text-white hover:underline">
+          <Link to="/forgot-password" className="text-white hover:underline">
             Go back
-          </a>
+          </Link>
         </p>
       </div>
     </div>

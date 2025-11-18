@@ -1,0 +1,52 @@
+// Hardcoded users for authentication
+export const HARDCODED_USERS = [
+  {
+    email: 'superadmin@donorhub.com',
+    password: 'superadmin123',
+    name: 'Super Admin',
+    role: 'superadmin',
+    phone: '+92 300 1111111',
+    bloodGroup: 'O+',
+    city: 'Lahore',
+  },
+  {
+    email: 'admin@donorhub.com',
+    password: 'admin123',
+    name: 'Admin User',
+    role: 'admin',
+    phone: '+92 300 2222222',
+    bloodGroup: 'A+',
+    city: 'Karachi',
+  },
+  {
+    email: 'user@donorhub.com',
+    password: 'user123',
+    name: 'Donor User',
+    role: 'user',
+    phone: '+92 300 3333333',
+    bloodGroup: 'B+',
+    city: 'Islamabad',
+  },
+];
+
+// Dummy data for donors
+export const DUMMY_DONORS = [
+  { id: 1, name: 'John Doe', email: 'john@example.com', phone: '+92 300 1234567', bloodGroup: 'O+', city: 'Lahore', lastDonation: '2 months ago', donations: 5, province: 'Punjab', gender: 'Male', dateOfBirth: '1990-05-15' },
+  { id: 2, name: 'Jane Smith', email: 'jane@example.com', phone: '+92 300 2345678', bloodGroup: 'A+', city: 'Karachi', lastDonation: '1 month ago', donations: 3, province: 'Sindh', gender: 'Female', dateOfBirth: '1992-08-20' },
+  { id: 3, name: 'Ahmed Ali', email: 'ahmed@example.com', phone: '+92 300 3456789', bloodGroup: 'B+', city: 'Islamabad', lastDonation: '3 months ago', donations: 7, province: 'Punjab', gender: 'Male', dateOfBirth: '1988-03-10' },
+  { id: 4, name: 'Sara Khan', email: 'sara@example.com', phone: '+92 300 4567890', bloodGroup: 'AB+', city: 'Lahore', lastDonation: '1 week ago', donations: 2, province: 'Punjab', gender: 'Female', dateOfBirth: '1995-11-25' },
+  { id: 5, name: 'Ali Hassan', email: 'ali@example.com', phone: '+92 300 5678901', bloodGroup: 'O-', city: 'Karachi', lastDonation: '4 months ago', donations: 4, province: 'Sindh', gender: 'Male', dateOfBirth: '1991-07-18' },
+  { id: 6, name: 'Fatima Ali', email: 'fatima@example.com', phone: '+92 300 6789012', bloodGroup: 'A+', city: 'Rawalpindi', lastDonation: '2 weeks ago', donations: 6, province: 'Punjab', gender: 'Female', dateOfBirth: '1993-09-12' },
+  { id: 7, name: 'Hassan Khan', email: 'hassan@example.com', phone: '+92 300 7890123', bloodGroup: 'O+', city: 'Lahore', lastDonation: '1 month ago', donations: 8, province: 'Punjab', gender: 'Male', dateOfBirth: '1989-04-05' },
+  { id: 8, name: 'Zara Ahmed', email: 'zara@example.com', phone: '+92 300 8901234', bloodGroup: 'B+', city: 'Faisalabad', lastDonation: '3 weeks ago', donations: 3, province: 'Punjab', gender: 'Female', dateOfBirth: '1994-12-30' },
+  { id: 9, name: 'Mohammad Ali', email: 'mohammad@example.com', phone: '+92 300 9012345', bloodGroup: 'A-', city: 'Multan', lastDonation: '5 months ago', donations: 5, province: 'Punjab', gender: 'Male', dateOfBirth: '1990-06-22' },
+  { id: 10, name: 'Ayesha Malik', email: 'ayesha@example.com', phone: '+92 300 0123456', bloodGroup: 'B-', city: 'Quetta', lastDonation: '2 months ago', donations: 4, province: 'Balochistan', gender: 'Female', dateOfBirth: '1992-10-08' },
+];
+
+// Dummy admins
+export const DUMMY_ADMINS = [
+  { id: 1, name: 'Admin User', email: 'admin@donorhub.com', role: 'admin', createdDate: '2024-01-15' },
+  { id: 2, name: 'Manager Admin', email: 'manager@donorhub.com', role: 'admin', createdDate: '2024-02-20' },
+  { id: 3, name: 'Coordinator Admin', email: 'coordinator@donorhub.com', role: 'admin', createdDate: '2024-03-10' },
+];
+

@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,9 +47,9 @@ export default function ForgotPassword() {
 
         <p className="text-center text-white/80 mt-5">
           Remember your password?{" "}
-          <a href="#" className="text-white hover:underline">
+          <Link to="/login" className="text-white hover:underline">
             Login
-          </a>
+          </Link>
         </p>
       </div>
     </div>
