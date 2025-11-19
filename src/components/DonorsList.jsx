@@ -1,10 +1,20 @@
-import React, { useState } from 'react';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Users, Search, Droplet, Phone, Mail, MapPin, Filter, Download, BarChart3 } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { DUMMY_DONORS } from '@/data/users';
+import React, { useState } from "react";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Users,
+  Search,
+  Droplet,
+  Phone,
+  Mail,
+  MapPin,
+  Filter,
+  Download,
+  BarChart3,
+} from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { DUMMY_DONORS } from "@/data/users";
 import {
   BarChart,
   Bar,
@@ -17,40 +27,53 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-} from 'recharts';
+} from "recharts";
 
-const COLORS = ['#ef4444', '#ec4899', '#f43f5e', '#fb7185', '#fda4af', '#fecdd3'];
+const COLORS = [
+  "#ef4444",
+  "#F97316",
+  "#EAB308",
+  "#22C55E",
+  "#3B82F6",
+  "#8B5CF6",
+  "#EC4899",
+  "#6B7280",
+];
 
 export default function DonorsList() {
   const { isUser } = useAuth();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterBloodGroup, setFilterBloodGroup] = useState('');
-  const [filterCity, setFilterCity] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterBloodGroup, setFilterBloodGroup] = useState("");
+  const [filterCity, setFilterCity] = useState("");
 
   // Use dummy data
   const donors = DUMMY_DONORS;
 
-  const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-  const cities = [...new Set(donors.map(d => d.city))].sort();
+  const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+  const cities = [...new Set(donors.map((d) => d.city))].sort();
 
-  const filteredDonors = donors.filter(donor => {
-    const matchesSearch = donor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         donor.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         donor.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesBloodGroup = !filterBloodGroup || donor.bloodGroup === filterBloodGroup;
+  const filteredDonors = donors.filter((donor) => {
+    const matchesSearch =
+      donor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      donor.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      donor.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesBloodGroup =
+      !filterBloodGroup || donor.bloodGroup === filterBloodGroup;
     const matchesCity = !filterCity || donor.city === filterCity;
     return matchesSearch && matchesBloodGroup && matchesCity;
   });
 
   // Chart data
-  const bloodGroupStats = bloodGroups.map(bg => ({
-    name: bg,
-    value: donors.filter(d => d.bloodGroup === bg).length
-  })).filter(item => item.value > 0);
+  const bloodGroupStats = bloodGroups
+    .map((bg) => ({
+      name: bg,
+      value: donors.filter((d) => d.bloodGroup === bg).length,
+    }))
+    .filter((item) => item.value > 0);
 
-  const cityStats = cities.map(city => ({
+  const cityStats = cities.map((city) => ({
     city: city,
-    donors: donors.filter(d => d.city === city).length
+    donors: donors.filter((d) => d.city === city).length,
   }));
 
   return (
@@ -59,14 +82,19 @@ export default function DonorsList() {
         <div>
           <h2 className="text-2xl md:text-3xl font-bold text-red-900 dark:text-red-100 mb-2 flex items-center gap-2">
             <Users className="w-6 h-6 md:w-8 md:h-8 text-red-600" />
-            {isUser ? 'Find Donors' : 'All Donors'}
+            {isUser ? "Find Donors" : "All Donors"}
           </h2>
           <p className="text-red-700 dark:text-red-300 text-sm md:text-base">
-            {isUser ? 'Search and connect with available donors' : 'Manage and view all registered donors'}
+            {isUser
+              ? "Search and connect with available donors"
+              : "Manage and view all registered donors"}
           </p>
         </div>
         {!isUser && (
-          <Button variant="outline" className="border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/50">
+          <Button
+            variant="outline"
+            className="border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/50"
+          >
             <Download className="w-4 h-4 mr-2" />
             Export
           </Button>
@@ -87,16 +115,27 @@ export default function DonorsList() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }) =>
+                    `${name} ${(percent * 100).toFixed(0)}%`
+                  }
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
                 >
                   {bloodGroupStats.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ backgroundColor: '#fff', border: '1px solid #fecdd3', borderRadius: '8px' }} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#fff",
+                    border: "1px solid #fecdd3",
+                    borderRadius: "8px",
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
           </Card>
@@ -111,8 +150,19 @@ export default function DonorsList() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#fecdd3" />
                 <XAxis dataKey="city" stroke="#991b1b" />
                 <YAxis stroke="#991b1b" />
-                <Tooltip contentStyle={{ backgroundColor: '#fff', border: '1px solid #fecdd3', borderRadius: '8px' }} />
-                <Bar dataKey="donors" fill="#ef4444" radius={[8, 8, 0, 0]} name="Donors" />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#fff",
+                    border: "1px solid #fecdd3",
+                    borderRadius: "8px",
+                  }}
+                />
+                <Bar
+                  dataKey="donors"
+                  fill="#ef4444"
+                  radius={[8, 8, 0, 0]}
+                  name="Donors"
+                />
               </BarChart>
             </ResponsiveContainer>
           </Card>
@@ -141,7 +191,9 @@ export default function DonorsList() {
               >
                 <option value="">All Blood Groups</option>
                 {bloodGroups.map((bg) => (
-                  <option key={bg} value={bg}>{bg}</option>
+                  <option key={bg} value={bg}>
+                    {bg}
+                  </option>
                 ))}
               </select>
             </div>
@@ -154,7 +206,9 @@ export default function DonorsList() {
               >
                 <option value="">All Cities</option>
                 {cities.map((city) => (
-                  <option key={city} value={city}>{city}</option>
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
                 ))}
               </select>
             </div>
@@ -162,9 +216,9 @@ export default function DonorsList() {
               <Button
                 variant="outline"
                 onClick={() => {
-                  setSearchTerm('');
-                  setFilterBloodGroup('');
-                  setFilterCity('');
+                  setSearchTerm("");
+                  setFilterBloodGroup("");
+                  setFilterCity("");
                 }}
                 className="border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/50"
               >
@@ -176,18 +230,26 @@ export default function DonorsList() {
         </div>
 
         <div className="mb-4 text-sm text-red-700 dark:text-red-300">
-          Showing <span className="font-semibold">{filteredDonors.length}</span> of <span className="font-semibold">{donors.length}</span> donors
+          Showing <span className="font-semibold">{filteredDonors.length}</span>{" "}
+          of <span className="font-semibold">{donors.length}</span> donors
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredDonors.map((donor) => (
-            <Card key={donor.id} className="p-4 md:p-5 bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-900 hover:shadow-lg transition-shadow">
+            <Card
+              key={donor.id}
+              className="p-4 md:p-5 bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-900 hover:shadow-lg transition-shadow"
+            >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-base md:text-lg font-semibold text-red-900 dark:text-red-100 truncate">{donor.name}</h3>
+                  <h3 className="text-base md:text-lg font-semibold text-red-900 dark:text-red-100 truncate">
+                    {donor.name}
+                  </h3>
                   <div className="flex items-center gap-2 mt-1">
                     <Droplet className="w-4 h-4 text-red-600 flex-shrink-0" />
-                    <span className="text-red-700 dark:text-red-300 font-medium">{donor.bloodGroup}</span>
+                    <span className="text-red-700 dark:text-red-300 font-medium">
+                      {donor.bloodGroup}
+                    </span>
                     {!isUser && (
                       <span className="text-xs text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/50 px-2 py-1 rounded">
                         {donor.donations} donations
@@ -224,7 +286,10 @@ export default function DonorsList() {
                 </Button>
               )}
               {isUser && (
-                <Button variant="outline" className="mt-3 w-full border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/50 text-sm">
+                <Button
+                  variant="outline"
+                  className="mt-3 w-full border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/50 text-sm"
+                >
                   Contact
                 </Button>
               )}
@@ -236,7 +301,9 @@ export default function DonorsList() {
           <div className="text-center py-12">
             <Users className="w-16 h-16 text-red-300 mx-auto mb-4" />
             <p className="text-red-700 dark:text-red-300">No donors found</p>
-            <p className="text-sm text-red-600 dark:text-red-400 mt-2">Try adjusting your filters</p>
+            <p className="text-sm text-red-600 dark:text-red-400 mt-2">
+              Try adjusting your filters
+            </p>
           </div>
         )}
       </Card>

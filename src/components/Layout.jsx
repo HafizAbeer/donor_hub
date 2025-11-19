@@ -1,5 +1,5 @@
-import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   SidebarProvider,
   Sidebar,
@@ -14,7 +14,7 @@ import {
   SidebarMenuButton,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/logo.png";
 import {
   LayoutDashboard,
@@ -25,10 +25,11 @@ import {
   LogOut,
   HeartHandshake,
   Settings,
+  History,
 } from "lucide-react";
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import MenuItem from './MenuItem';
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import MenuItem from "./MenuItem";
 
 const menuItemsByRole = {
   superadmin: [
@@ -36,17 +37,20 @@ const menuItemsByRole = {
     { title: "Create Admin", url: "/create-admin", icon: Shield },
     { title: "Add User", url: "/add-user", icon: UserPlus },
     { title: "All Donors", url: "/donors", icon: Users },
+    { title: "Patient History", url: "/patient-history", icon: History },
     { title: "Settings", url: "/settings", icon: Settings },
   ],
   admin: [
     { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
     { title: "Add User", url: "/add-user", icon: UserPlus },
     { title: "All Donors", url: "/donors", icon: Users },
+    { title: "Patient History", url: "/patient-history", icon: History },
     { title: "Settings", url: "/settings", icon: Settings },
   ],
   user: [
     { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
     { title: "Donors", url: "/donors", icon: HeartHandshake },
+    { title: "Patient History", url: "/patient-history", icon: History },
     { title: "My Profile", url: "/profile", icon: UserCircle },
   ],
 };
@@ -66,8 +70,12 @@ function SidebarContentInner() {
             className="w-8 h-8 md:w-10 md:h-10 object-contain flex-shrink-0"
           />
           <div className="flex flex-col min-w-0">
-            <span className="font-bold text-base md:text-lg text-red-700 dark:text-red-400 truncate">Donor Hub</span>
-            <span className="text-xs text-red-600 dark:text-red-500 truncate">Blood Donation Network</span>
+            <span className="font-bold text-base md:text-lg text-red-700 dark:text-red-400 truncate">
+              Donor Hub
+            </span>
+            <span className="text-xs text-red-600 dark:text-red-500 truncate">
+              Blood Donation Network
+            </span>
           </div>
         </div>
       </SidebarHeader>
@@ -100,7 +108,7 @@ function SidebarFooterInner() {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate("/login");
     if (isMobile) {
       setOpenMobile(false);
     }
@@ -111,14 +119,14 @@ function SidebarFooterInner() {
       <div className="space-y-2 md:space-y-3">
         <div className="flex items-center gap-2 md:gap-3 px-2 py-2 rounded-md bg-red-50 dark:bg-red-900/30">
           <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-red-500 to-pink-500 flex items-center justify-center text-white font-semibold flex-shrink-0">
-            {user?.name?.charAt(0).toUpperCase() || 'U'}
+            {user?.name?.charAt(0).toUpperCase() || "U"}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs md:text-sm font-semibold text-red-900 dark:text-red-100 truncate">
-              {user?.name || 'User'}
+              {user?.name || "User"}
             </p>
             <p className="text-xs text-red-700 dark:text-red-400 truncate">
-              {user?.email || 'user@example.com'}
+              {user?.email || "user@example.com"}
             </p>
           </div>
         </div>
@@ -142,29 +150,38 @@ export default function Layout({ children }) {
   // Get page title based on current route
   const getPageTitle = () => {
     const path = location.pathname;
-    
-    if (path === '/dashboard') {
-      const rolePrefix = user?.role === 'superadmin' ? 'Super Admin' : 
-                         user?.role === 'admin' ? 'Admin' : 
-                         'Donor';
+
+    if (path === "/dashboard") {
+      const rolePrefix =
+        user?.role === "superadmin"
+          ? "Super Admin"
+          : user?.role === "admin"
+          ? "Admin"
+          : "Donor";
       return `${rolePrefix} Dashboard`;
     }
-    
+
     const pageTitles = {
-      '/create-admin': 'Create Admin',
-      '/add-user': 'Add User',
-      '/donors': 'All Donors',
-      '/profile': 'My Profile',
-      '/settings': 'Settings',
+      "/create-admin": "Create Admin",
+      "/add-user": "Add User",
+      "/donors": "All Donors",
+      "/profile": "My Profile",
+      "/patient-history": "Patient History",
+      "/settings": "Settings",
     };
-    
-    return pageTitles[path] || 'Page';
+
+    return pageTitles[path] || "Page";
   };
 
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex h-screen w-full overflow-hidden">
-        <Sidebar side="left" variant="sidebar" collapsible="none" className="bg-gradient-to-b from-red-50 to-pink-50 dark:from-red-950 dark:to-pink-950 border-r border-red-200 dark:border-red-900">
+        <Sidebar
+          side="left"
+          variant="sidebar"
+          collapsible="none"
+          className="bg-gradient-to-b from-red-50 to-pink-50 dark:from-red-950 dark:to-pink-950 border-r border-red-200 dark:border-red-900"
+        >
           <SidebarContentInner />
           <SidebarFooterInner />
         </Sidebar>

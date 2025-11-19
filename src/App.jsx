@@ -13,6 +13,7 @@ import AddUser from "./components/AddUser";
 import DonorsList from "./components/DonorsList";
 import UserProfile from "./components/UserProfile";
 import Settings from "./pages/Settings";
+import PatientHistory from "./pages/PatientHistory";
 import "./App.css";
 
 function PrivateRoutes() {
@@ -72,6 +73,14 @@ function PrivateRoutes() {
           }
         />
         <Route
+          path="/patient-history"
+          element={
+            <ProtectedRoute>
+              <PatientHistory />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/profile"
           element={
             <ProtectedRoute>
@@ -95,7 +104,7 @@ function PrivateRoutes() {
 
 function RootRedirect() {
   const { user, token, isAuthenticated, isLoading } = useAuth();
-  
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-50 via-pink-50 to-red-50 dark:from-red-950 dark:via-pink-950 dark:to-red-950">
@@ -106,18 +115,18 @@ function RootRedirect() {
       </div>
     );
   }
-  
+
   // Redirect to dashboard if authenticated, otherwise to login
   if (isAuthenticated && user && token) {
     return <Navigate to="/dashboard" replace />;
   }
-  
+
   return <Navigate to="/login" replace />;
 }
 
 function PublicRoute({ children }) {
   const { user, token, isAuthenticated, isLoading } = useAuth();
-  
+
   // Show loading while checking auth
   if (isLoading) {
     return (
@@ -129,12 +138,12 @@ function PublicRoute({ children }) {
       </div>
     );
   }
-  
+
   // If authenticated, redirect to dashboard
   if (isAuthenticated && user && token) {
     return <Navigate to="/dashboard" replace />;
   }
-  
+
   return children;
 }
 
