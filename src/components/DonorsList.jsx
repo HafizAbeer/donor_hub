@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,9 @@ import {
   Filter,
   Download,
   BarChart3,
+  Edit2,
+  Trash2,
+  Clock,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { DUMMY_DONORS } from "@/data/users";
@@ -40,17 +43,80 @@ const COLORS = [
   "#6B7280",
 ];
 
+const MS_IN_DAY = 1000 * 60 * 60 * 24;
+const DAYS_UNAVAILABLE = 90;
+
+const safeISODate = (value) => {
+  if (!value) return null;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+  return parsed.toISOString();
+};
+
+const evaluateAvailability = (isoDate) => {
+  if (!isoDate) {
+    return { isAvailable: true, daysSince: Infinity };
+  }
+  const diffMs = Date.now() - new Date(isoDate).getTime();
+  const diffDays = Math.max(0, Math.floor(diffMs / MS_IN_DAY));
+  return {
+    isAvailable: diffDays >= DAYS_UNAVAILABLE,
+    daysSince: diffDays,
+  };
+};
+
+const formatRelativeDonation = (isoDate) => {
+  if (!isoDate) return "No donation yet";
+
+  const diffMs = Date.now() - new Date(isoDate).getTime();
+  const diffDays = Math.max(0, Math.floor(diffMs / MS_IN_DAY));
+
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "1 day ago";
+  if (diffDays < 30) return `${diffDays} days ago`;
+
+  const diffMonths = Math.floor(diffDays / 30);
+  if (diffMonths < 12) {
+    return `${diffMonths} month${diffMonths > 1 ? "s" : ""} ago`;
+  }
+
+  const diffYears = Math.floor(diffMonths / 12);
+  return `${diffYears} year${diffYears > 1 ? "s" : ""} ago`;
+};
+
+const enrichDonorRecord = (donor) => {
+  const isoDate = safeISODate(donor.lastDonationDate);
+  const { isAvailable, daysSince } = evaluateAvailability(isoDate);
+  return {
+    ...donor,
+    lastDonationDate: isoDate,
+    lastDonationDisplay: formatRelativeDonation(isoDate),
+    isAvailable,
+    availabilityLabel: isAvailable ? "Available" : "Not Available",
+    daysSinceDonation: daysSince,
+    hostelite: Boolean(donor.hostelite),
+  };
+};
+
 export default function DonorsList() {
-  const { isUser } = useAuth();
+  const { isUser, isAdmin, isSuperAdmin } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBloodGroup, setFilterBloodGroup] = useState("");
   const [filterCity, setFilterCity] = useState("");
-
-  // Use dummy data
-  const donors = DUMMY_DONORS;
+  const [showAvailableOnly, setShowAvailableOnly] = useState(false);
+  const [donors, setDonors] = useState(() =>
+    DUMMY_DONORS.map((donor) => enrichDonorRecord(donor))
+  );
 
   const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
-  const cities = [...new Set(donors.map((d) => d.city))].sort();
+  const cities = useMemo(
+    () => [...new Set(donors.map((d) => d.city))].sort(),
+    [donors]
+  );
+
+  const restrictToAvailable = showAvailableOnly || Boolean(filterBloodGroup);
 
   const filteredDonors = donors.filter((donor) => {
     const matchesSearch =
@@ -60,21 +126,84 @@ export default function DonorsList() {
     const matchesBloodGroup =
       !filterBloodGroup || donor.bloodGroup === filterBloodGroup;
     const matchesCity = !filterCity || donor.city === filterCity;
-    return matchesSearch && matchesBloodGroup && matchesCity;
+    const matchesAvailability =
+      !restrictToAvailable || (restrictToAvailable && donor.isAvailable);
+
+    return (
+      matchesSearch && matchesBloodGroup && matchesCity && matchesAvailability
+    );
   });
 
   // Chart data
-  const bloodGroupStats = bloodGroups
-    .map((bg) => ({
-      name: bg,
-      value: donors.filter((d) => d.bloodGroup === bg).length,
-    }))
-    .filter((item) => item.value > 0);
+  const bloodGroupStats = useMemo(
+    () =>
+      bloodGroups
+        .map((bg) => ({
+          name: bg,
+          value: donors.filter((d) => d.bloodGroup === bg).length,
+        }))
+        .filter((item) => item.value > 0),
+    [bloodGroups, donors]
+  );
 
-  const cityStats = cities.map((city) => ({
-    city: city,
-    donors: donors.filter((d) => d.city === city).length,
-  }));
+  const cityStats = useMemo(
+    () =>
+      cities.map((city) => ({
+        city: city,
+        donors: donors.filter((d) => d.city === city).length,
+      })),
+    [cities, donors]
+  );
+
+  const handleToggleAvailabilityFilter = () => {
+    setShowAvailableOnly((prev) => !prev);
+  };
+
+  const handleEditDonor = (donor) => {
+    const updatedPhone = window.prompt(
+      `Update phone number for ${donor.name}`,
+      donor.phone
+    );
+    if (updatedPhone === null) return;
+
+    const updatedCity = window.prompt(
+      `Update city for ${donor.name}`,
+      donor.city
+    );
+    if (updatedCity === null) return;
+
+    setDonors((prev) =>
+      prev.map((item) =>
+        item.id === donor.id
+          ? enrichDonorRecord({
+              ...item,
+              phone: updatedPhone.trim() || item.phone,
+              city: updatedCity.trim() || item.city,
+            })
+          : item
+      )
+    );
+  };
+
+  const handleDeleteDonor = (donorId) => {
+    const shouldDelete = window.confirm("Delete this donor record?");
+    if (!shouldDelete) return;
+    setDonors((prev) => prev.filter((donor) => donor.id !== donorId));
+  };
+
+  const handleMarkDonatedToday = (donorId) => {
+    const todayISO = new Date().toISOString();
+    setDonors((prev) =>
+      prev.map((donor) =>
+        donor.id === donorId
+          ? enrichDonorRecord({
+              ...donor,
+              lastDonationDate: todayISO,
+            })
+          : donor
+      )
+    );
+  };
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -212,6 +341,15 @@ export default function DonorsList() {
                 ))}
               </select>
             </div>
+            <label className="flex items-center gap-2 text-sm text-red-700 dark:text-red-300">
+              <input
+                type="checkbox"
+                checked={showAvailableOnly}
+                onChange={handleToggleAvailabilityFilter}
+                className="h-4 w-4 accent-red-600"
+              />
+              Show available only
+            </label>
             {(filterBloodGroup || filterCity || searchTerm) && (
               <Button
                 variant="outline"
@@ -219,6 +357,7 @@ export default function DonorsList() {
                   setSearchTerm("");
                   setFilterBloodGroup("");
                   setFilterCity("");
+                  setShowAvailableOnly(false);
                 }}
                 className="border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/50"
               >
@@ -240,13 +379,13 @@ export default function DonorsList() {
               key={donor.id}
               className="p-4 md:p-5 bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-900 hover:shadow-lg transition-shadow"
             >
-              <div className="flex items-start justify-between mb-3">
+              <div className="flex items-start justify-between mb-3 gap-3">
                 <div className="flex-1 min-w-0">
                   <h3 className="text-base md:text-lg font-semibold text-red-900 dark:text-red-100 truncate">
                     {donor.name}
                   </h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Droplet className="w-4 h-4 text-red-600 flex-shrink-0" />
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    <Droplet className="w-4 h-4 text-red-600 shrink-0" />
                     <span className="text-red-700 dark:text-red-300 font-medium">
                       {donor.bloodGroup}
                     </span>
@@ -257,31 +396,84 @@ export default function DonorsList() {
                     )}
                   </div>
                 </div>
+                <div className="flex flex-col items-end gap-2">
+                  <span
+                    className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                      donor.hostelite
+                        ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200"
+                        : "bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-200"
+                    }`}
+                  >
+                    {donor.hostelite ? "Hostelite" : "Non-Hostelite"}
+                  </span>
+                  <span
+                    className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                      donor.isAvailable
+                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200"
+                        : "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-200"
+                    }`}
+                  >
+                    {donor.availabilityLabel}
+                  </span>
+                </div>
               </div>
 
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2 text-red-700 dark:text-red-400">
-                  <Mail className="w-4 h-4 flex-shrink-0" />
+                  <Mail className="w-4 h-4 shrink-0" />
                   <span className="truncate">{donor.email}</span>
                 </div>
                 <div className="flex items-center gap-2 text-red-700 dark:text-red-400">
-                  <Phone className="w-4 h-4 flex-shrink-0" />
+                  <Phone className="w-4 h-4 shrink-0" />
                   <span>{donor.phone}</span>
                 </div>
                 <div className="flex items-center gap-2 text-red-700 dark:text-red-400">
-                  <MapPin className="w-4 h-4 flex-shrink-0" />
+                  <MapPin className="w-4 h-4 shrink-0" />
                   <span>{donor.city}</span>
                 </div>
               </div>
 
               <div className="mt-4 pt-3 border-t border-red-200 dark:border-red-800">
-                <p className="text-xs text-red-600 dark:text-red-400">
-                  Last donation: {donor.lastDonation}
+                <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                  <Clock className="w-4 h-4 shrink-0" />
+                  Last donation: {donor.lastDonationDisplay}
                 </p>
               </div>
 
+              <div className="mt-3 flex flex-wrap gap-2">
+                {(isAdmin || isSuperAdmin) && (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEditDonor(donor)}
+                      className="border-red-300 dark:border-red-800 text-red-700 dark:text-red-200"
+                    >
+                      <Edit2 className="w-4 h-4 mr-1" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteDonor(donor.id)}
+                      className="border-red-300 dark:border-red-800 text-red-700 dark:text-red-200"
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      Delete
+                    </Button>
+                  </>
+                )}
+                <Button
+                  size="sm"
+                  onClick={() => handleMarkDonatedToday(donor.id)}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  Mark as donated today
+                </Button>
+              </div>
+
               {!isUser && (
-                <Button className="mt-3 w-full bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white text-sm">
+                <Button className="mt-3 w-full bg-linear-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white text-sm">
                   View Details
                 </Button>
               )}
