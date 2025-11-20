@@ -39,21 +39,64 @@ const COLORS = [
   "#6B7280",
 ];
 
+// Helper function to convert lastDonationDate to human-readable format
+const getLastDonationText = (lastDonationDate) => {
+  if (!lastDonationDate) return "Never";
+
+  const donationDate = new Date(lastDonationDate);
+  const now = new Date();
+  const diffTime = Math.abs(now - donationDate);
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 7) {
+    return `${diffDays} day${diffDays !== 1 ? "s" : ""} ago`;
+  } else if (diffDays < 30) {
+    const weeks = Math.floor(diffDays / 7);
+    return `${weeks} week${weeks !== 1 ? "s" : ""} ago`;
+  } else if (diffDays < 365) {
+    const months = Math.floor(diffDays / 30);
+    return `${months} month${months !== 1 ? "s" : ""} ago`;
+  } else {
+    const years = Math.floor(diffDays / 365);
+    return `${years} year${years !== 1 ? "s" : ""} ago`;
+  }
+};
+
+// Helper function to check if donor is active (donated within last 3 months)
+const isActiveDonor = (donor) => {
+  if (!donor.lastDonationDate) return false;
+
+  const donationDate = new Date(donor.lastDonationDate);
+  const now = new Date();
+  const diffTime = Math.abs(now - donationDate);
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  return diffDays <= 90; // 3 months = ~90 days
+};
+
+// Helper function to check if donor donated this month
+const isNewThisMonth = (donor) => {
+  if (!donor.lastDonationDate) return false;
+
+  const donationDate = new Date(donor.lastDonationDate);
+  const now = new Date();
+
+  return (
+    donationDate.getMonth() === now.getMonth() &&
+    donationDate.getFullYear() === now.getFullYear()
+  );
+};
+
 export default function AdminDashboard() {
   const [dateFilter, setDateFilter] = useState("month");
 
   const totalDonors = DUMMY_DONORS.length;
-  const activeDonors = DUMMY_DONORS.filter((d) => {
-    const lastDonation = d.lastDonation;
-    return (
-      lastDonation.includes("week") ||
-      (lastDonation.includes("month") && parseInt(lastDonation) <= 3)
-    );
-  }).length;
-  const newThisMonth = DUMMY_DONORS.filter(
-    (d) => d.lastDonation.includes("week") || d.lastDonation.includes("month")
-  ).length;
-  const totalDonations = DUMMY_DONORS.reduce((sum, d) => sum + d.donations, 0);
+  const activeDonors = DUMMY_DONORS.filter(isActiveDonor).length;
+  const newThisMonth = DUMMY_DONORS.filter(isNewThisMonth).length;
+  const totalDonations = DUMMY_DONORS.reduce(
+    (sum, d) => sum + (d.donations || 0),
+    0
+  );
 
   const stats = [
     {
@@ -113,25 +156,18 @@ export default function AdminDashboard() {
   );
 
   // Get recent donations from dummy data
-  const recentDonations = DUMMY_DONORS.sort((a, b) => {
-    const aDays = a.lastDonation.includes("week")
-      ? 7
-      : a.lastDonation.includes("month")
-      ? parseInt(a.lastDonation) * 30
-      : 0;
-    const bDays = b.lastDonation.includes("week")
-      ? 7
-      : b.lastDonation.includes("month")
-      ? parseInt(b.lastDonation) * 30
-      : 0;
-    return aDays - bDays;
-  })
+  const recentDonations = DUMMY_DONORS.filter((d) => d.lastDonationDate) // Only include donors with donation dates
+    .sort((a, b) => {
+      const aDate = new Date(a.lastDonationDate);
+      const bDate = new Date(b.lastDonationDate);
+      return bDate - aDate; // Sort by most recent first
+    })
     .slice(0, 5)
-    .map((donor, index) => ({
+    .map((donor) => ({
       id: donor.id,
       donor: donor.name,
       bloodGroup: donor.bloodGroup,
-      date: donor.lastDonation,
+      date: getLastDonationText(donor.lastDonationDate),
       location: donor.city,
     }));
 

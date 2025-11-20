@@ -40,20 +40,26 @@ const COLORS = [
   "#6B7280",
 ];
 
+// Helper function to check if donor is active (donated within last 3 months)
+const isActiveDonor = (donor) => {
+  if (!donor.lastDonationDate) return false;
+  
+  const donationDate = new Date(donor.lastDonationDate);
+  const now = new Date();
+  const diffTime = Math.abs(now - donationDate);
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  
+  return diffDays <= 90; // 3 months = ~90 days
+};
+
 export default function SuperAdminDashboard() {
   const [dateFilter, setDateFilter] = useState("month");
 
   // Calculate stats from dummy data
   const totalUsers = DUMMY_DONORS.length + DUMMY_ADMINS.length + 1; // +1 for superadmin
   const totalAdmins = DUMMY_ADMINS.length + 1; // +1 for superadmin
-  const activeDonors = DUMMY_DONORS.filter((d) => {
-    const lastDonation = d.lastDonation;
-    return (
-      lastDonation.includes("week") ||
-      (lastDonation.includes("month") && parseInt(lastDonation) <= 3)
-    );
-  }).length;
-  const totalDonations = DUMMY_DONORS.reduce((sum, d) => sum + d.donations, 0);
+  const activeDonors = DUMMY_DONORS.filter(isActiveDonor).length;
+  const totalDonations = DUMMY_DONORS.reduce((sum, d) => sum + (d.donations || 0), 0);
 
   const stats = [
     {
